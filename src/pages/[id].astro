@@ -1,0 +1,50 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getAnimes, getAnimeDetail } from "../../lib/microcms";
+import { Image } from 'astro:assets';
+
+// 詳細記事ページの全パスを取得
+export async function getStaticPaths() {
+  const response = await getAnimes({ fields: ["id"] });
+  return response.contents.map((content: any) => ({
+    params: {
+      id: content.id,
+    },
+  }));
+}
+
+//記事の詳細情報を取得
+const { id } = Astro.params;
+if(!id) {
+  // TODO：エラーページに飛ばす
+  throw new Error("エラー")
+}
+const anime = await getAnimeDetail(id);
+---
+
+<Layout title={anime.title}>
+  <main>
+    <h1 transition:name={`card ${id}`}>{anime.title}</h1>
+    <Image src={anime.image.url} alt="" width={400} height={400}/>
+    <div class="post" set:html={anime.body}></div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    color: white;
+    margin: auto;
+    padding: 1em;
+    max-width: 60ch;
+  }
+  h1 {
+		font-size: 2rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: center;
+		margin-bottom: 1em;
+	}
+  .post > a {
+    color: white;
+  }
+</style>
